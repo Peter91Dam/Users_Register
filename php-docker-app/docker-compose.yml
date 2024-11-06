@@ -1,0 +1,36 @@
+version: '3'
+services:
+  web:
+    image: php:8.0-apache
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      INSTALL_EXTENSIONS: pdo_mysql
+    command: bash -c "docker-php-ext-install pdo pdo_mysql && apache2-foreground"
+
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: app_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - "8081:80"
+
+volumes:
+  db_data:
